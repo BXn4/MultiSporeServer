@@ -2,9 +2,11 @@ package server
 
 import (
 	"fmt"
+	"multispore/internal/client"
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/charmbracelet/log"
@@ -13,19 +15,24 @@ import (
 type ServerConfig struct {
 	Host string
 	Port string
+	Name string
 }
 
 type Server struct {
-	config *ServerConfig
+	config  *ServerConfig
+	clients map[string]net.Conn
+	mu      sync.Mutex
 }
 
 func New(config *ServerConfig) (*Server, error) {
 	return &Server{
-		config: config,
+		config:  config,
+		clients: make(map[string]net.Conn),
 	}, nil
 }
 
 func (s *Server) Run() {
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -34,11 +41,11 @@ func (s *Server) Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer listener.Close()
 
-	log.Infof("Server started, and listening on %s", address)
+	log.Infof("Server: [%s] started, and listening on %s", s.config.Name, address)
 
+	// Handle connections
 	go func() {
 		for {
 			conn, err := listener.Accept()
@@ -47,11 +54,12 @@ func (s *Server) Run() {
 			}
 			defer conn.Close()
 
-			//c := client.New(conn, db, s.gm)
-			//c.SetClientID(s.gm.NextClientID())
-			//s.gm.AddClient(c)
-			//c.Start()
-			//go commands.HandleClient(c, s.gm)
+			c := client.New(conn)
+			log.Infof("Client connected %s ", c.GetIP())
+			/*c.SetClientID(s.gm.NextClientID())
+			s.gm.AddClient(c)
+			c.Start()
+			go commands.HandleClient(c, s.gm)*/
 		}
 	}()
 	// Wait for interrupt signal

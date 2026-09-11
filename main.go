@@ -19,10 +19,10 @@ func main() {
 	}
 
 	srv, err := server.New(
-		// This is the server config
 		&server.ServerConfig{
 			Host: utils.If(hasConfig, envFile["SERVER_HOST"], "127.0.0.1"),
 			Port: utils.If(hasConfig, envFile["SERVER_PORT"], "5523"),
+			Name: utils.If(hasConfig, envFile["SERVER_NAME"], "Default Spore server"),
 		},
 	)
 
