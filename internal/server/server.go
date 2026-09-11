@@ -3,10 +3,11 @@ package server
 import (
 	"fmt"
 	"multispore/internal/client"
+	"multispore/internal/database"
+	"multispore/internal/managers"
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/charmbracelet/log"
@@ -19,15 +20,22 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	config  *ServerConfig
-	clients map[string]net.Conn
-	mu      sync.Mutex
+	config   *ServerConfig
+	dbConfig *database.DBConfig
+	maxConn  int
+	db       *database.Database
+	gm       *managers.GameManager
 }
 
-func New(config *ServerConfig) (*Server, error) {
+func New(config *ServerConfig, dbConfig *database.DBConfig) (*Server, error) {
+	gm, err := managers.NewGameManager()
+	if err != nil {
+		return nil, err
+	}
 	return &Server{
-		config:  config,
-		clients: make(map[string]net.Conn),
+		config:   config,
+		dbConfig: dbConfig,
+		gm:       gm,
 	}, nil
 }
 
@@ -35,6 +43,14 @@ func (s *Server) Run() {
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	db, err := database.ConnectToDB(s.dbConfig)
+	if err != nil {
+		log.Errorf("Failed to connect to database.")
+		return
+	}
+	defer db.Close()
+	log.Infof("Server connected to database.")
 
 	address := fmt.Sprintf("%s:%s", s.config.Host, s.config.Port)
 	listener, err := net.Listen("tcp", address)
@@ -56,10 +72,10 @@ func (s *Server) Run() {
 
 			c := client.New(conn)
 			log.Infof("Client connected %s ", c.GetIP())
-			/*c.SetClientID(s.gm.NextClientID())
+			c.SetClientID(s.gm.NextClientID())
 			s.gm.AddClient(c)
-			c.Start()
-			go commands.HandleClient(c, s.gm)*/
+			//c.Start()
+			//go commands.HandleClient(c, s.gm)*/
 		}
 	}()
 	// Wait for interrupt signal

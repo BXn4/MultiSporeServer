@@ -1,6 +1,7 @@
 package main
 
 import (
+	"multispore/internal/database"
 	"multispore/internal/server"
 	"multispore/internal/utils"
 	"os"
@@ -23,6 +24,9 @@ func main() {
 			Host: utils.If(hasConfig, envFile["SERVER_HOST"], "127.0.0.1"),
 			Port: utils.If(hasConfig, envFile["SERVER_PORT"], "5523"),
 			Name: utils.If(hasConfig, envFile["SERVER_NAME"], "Default Spore server"),
+		},
+		&database.DBConfig{
+			Database: utils.If(hasConfig, envFile["DB_NAME"], "spore"),
 		},
 	)
 
