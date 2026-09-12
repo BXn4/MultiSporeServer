@@ -3,7 +3,7 @@ package client
 import (
 	"bufio"
 	"io"
-	"multispore/types"
+	"multispore/internal/types"
 	"net"
 	"strings"
 	"time"

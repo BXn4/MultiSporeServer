@@ -1,6 +1,6 @@
 package interfaces
 
-import responses "multispore/types"
+import responses "multispore/internal/types"
 
 // TEMP!!!
 type Location interface {
