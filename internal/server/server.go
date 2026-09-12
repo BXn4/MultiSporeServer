@@ -74,6 +74,19 @@ func (s *Server) Run() {
 			log.Infof("Client connected %s ", c.GetIP())
 			c.SetClientID(s.gm.NextClientID())
 			s.gm.AddClient(c)
+
+			go func(conn net.Conn) {
+				defer conn.Close()
+				buf := make([]byte, 4096)
+				for {
+					n, err := conn.Read(buf)
+					if err != nil {
+						log.Infof("Connection closed/error: %v", err)
+						return
+					}
+					log.Infof("Received %d bytes: %q", n, buf[:n])
+				}
+			}(conn)
 			//c.Start()
 			//go commands.HandleClient(c, s.gm)*/
 		}
