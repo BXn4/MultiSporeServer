@@ -1,6 +1,6 @@
 package player
 
-import "multispore/internal/creature"
+import "multispore/internal/models/creature"
 
 type Player struct {
 	ID        int               `gorm:"column:id;primaryKey;autoIncrement;type:int"`

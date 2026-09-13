@@ -1,6 +1,11 @@
 package creature
 
-import "multispore/internal/simple"
+import (
+	"fmt"
+	"multispore/internal/simple"
+	"strconv"
+	"strings"
+)
 
 /* CELL STAGE
 2026/09/12 09:53:04 INFO Received 11 rigblocks from client 127.0.0.1
@@ -64,4 +69,104 @@ type Rigblock struct {
 	FootWeaponOrMouth uint32         // uint32_t mFootWeaponOrMouthType
 	GroupID           uint32         // uint32_t mGroupID
 	InstanceID        uint32         // uint32_t mInstanceID
+}
+
+// RigblockDataType
+const (
+	NullBlock = 0
+	Unk1      = 1
+	Standard  = 2
+	Unk3      = 3
+	PlantRoot = 4
+	Vertebra  = 5
+)
+
+// Flags
+const (
+	notUseSkin   = 1
+	isBaked      = 8
+	isFoot       = 32
+	isWeapon     = 128
+	isJiggable   = 512
+	extraJiggly  = 2048
+	isAsymmetric = 4096
+)
+
+func (r *Rigblock) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+
+	str, ok := value.(string)
+	if !ok {
+		bytes, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("Failed to unmarshal rigblock value: %v", value)
+		}
+		str = string(bytes)
+	}
+
+	creature := NewRigblockFromString(str)
+	if creature == nil {
+		return fmt.Errorf("Failed to parse creature string: %s", str)
+	}
+
+	*r = *creature
+	return nil
+}
+
+func NewRigblockFromString(s string) *Rigblock {
+	// "0+-1+-1 11 5 0.4000+-0.0000+-0.2851+0.0000+0.0000+0.0000+1.0000+0+1080123392+3244096132#1+0+-1...."
+	ids := strings.Split(s, "#")
+	var r Rigblock
+	for _, part := range ids {
+		parts := strings.Split(part, "+")
+
+		len := len(parts)
+
+		switch len {
+		case 14:
+			{
+				id, _ := strconv.ParseInt(parts[0], 10, 16)
+				r.ID = int16(id)
+			}
+		case 15:
+			{
+
+			}
+		}
+	}
+	return &r
+}
+
+func (rb Rigblock) GetPartType() string {
+	switch {
+	case rb.Type == Vertebra:
+		return "Spine"
+
+	case int(rb.Flags)&isFoot != 0:
+		return "Foot"
+
+	case int(rb.Flags)&isWeapon != 0:
+		return "Weapon"
+
+	case rb.Type == Unk3:
+		return "Unk3"
+
+	case rb.FootWeaponOrMouth != 0:
+		return "Foot or Weapon or Mouth"
+
+	case rb.Parent == 0 && rb.Symmetric >= 0:
+		return "Head Detail"
+
+	case rb.Type == Standard:
+		return "Attached Part"
+
+	default:
+		return "Unknown"
+	}
+}
+
+func (rb Rigblock) String() string {
+	return strings.Join([]string{}, "+")
 }
