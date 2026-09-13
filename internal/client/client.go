@@ -3,7 +3,8 @@ package client
 import (
 	"bufio"
 	"io"
-	"multispore/internal/types"
+	"multispore/internal/types/request"
+	"multispore/internal/types/response"
 	"net"
 	"strings"
 	"time"
@@ -20,8 +21,8 @@ type Client struct {
 	TimeoutStamp    time.Time
 	isDisconnecting bool
 
-	RequestQueue  chan *types.Request
-	ResponseQueue chan types.Response
+	RequestQueue  chan *request.Request
+	ResponseQueue chan response.Response
 }
 
 func New(conn net.Conn) *Client {
@@ -33,8 +34,8 @@ func New(conn net.Conn) *Client {
 
 		TimeoutStamp: time.Now(),
 
-		RequestQueue:  make(chan *types.Request, 255),
-		ResponseQueue: make(chan types.Response, 255),
+		RequestQueue:  make(chan *request.Request, 255),
+		ResponseQueue: make(chan response.Response, 255),
 	}
 }
 
@@ -51,7 +52,7 @@ func (c *Client) GetIP() string {
 }
 
 func (c *Client) SendExtensionResponse(args ...string) {
-	resp := types.NewExtensionResponse(args...)
+	resp := response.NewExtensionResponse(args...)
 	log.Logf(log.Level(-3), "%s", resp.Wrap())
 	c.ResponseQueue <- resp
 }
@@ -75,7 +76,7 @@ func (c *Client) receiveRequests() {
 		}
 		log.Logf(log.Level(-5), "%s", message)
 
-		req, err := types.ParseRequest(strings.Trim(message, "\x00"))
+		req, err := request.ParseRequest(strings.Trim(message, "\x00"))
 		if err != nil {
 			log.Error("Failed to parse request: %v", err)
 			continue

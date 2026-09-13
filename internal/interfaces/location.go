@@ -1,10 +1,10 @@
 package interfaces
 
-import responses "multispore/internal/types"
+import "multispore/internal/types/response"
 
 // TEMP!!!
 type Location interface {
-	Join(id int, channel chan<- responses.Response)
+	Join(id int, channel chan<- response.Response)
 
 	// Disconnects the player by id
 	Leave(id int)

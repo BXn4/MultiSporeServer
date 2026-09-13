@@ -2,7 +2,7 @@ package creature
 
 import (
 	"fmt"
-	"multispore/internal/simple"
+	"multispore/internal/types"
 	"strconv"
 	"strings"
 )
@@ -58,9 +58,9 @@ type Rigblock struct {
 	Capabilites       int8           // int8_t mNumCapabilities
 	Bounding          int            // Math::BoundingBox mBoundingBox
 	Scale             float32        // float mScale
-	Orientation       simple.Matrix3 // Math::Matrix3 mTotalOrientation
-	Position          simple.Vector3 // Math::Vector3 mPosition
-	Offset            simple.Vector3 // Math::Vector3 mEffectOffset
+	Orientation       types.Matrix3  // Math::Matrix3 mTotalOrientation
+	Position          types.Position // Math::Vector3 mPosition
+	Offset            types.Vector3  // Math::Vector3 mEffectOffset
 	ScaleRelative     float32        // float mScaleRelative
 	Distance          float32        // float mSocketConnectorDistance
 	MuscleScale       float32        // float mMuscleScale
@@ -116,23 +116,62 @@ func (r *Rigblock) Scan(value interface{}) error {
 }
 
 func NewRigblockFromString(s string) *Rigblock {
-	// "0+-1+-1 11 5 0.4000+-0.0000+-0.2851+0.0000+0.0000+0.0000+1.0000+0+1080123392+3244096132#1+0+-1...."
+	/* CELL
+	|| ID: 0  PARENT: -1  || SYMMETRIC: -1 || FLAGS: 11   TYPE: 5 || SCALE: 0.4000 || POSITION: (-0.0000) (-0.2851) (0.0000) || SCALERELATIVE: 0.0000 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 1  PARENT:  0  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.6000 || POSITION: (-0.0000) (-0.1734) (0.0000) || SCALERELATIVE: 0.2500 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 2  PARENT:  1  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 1.0750 || POSITION: (-0.0000) (-0.0618) (0.0000) || SCALERELATIVE: 0.8438 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 3  PARENT:  2  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.9750 || POSITION: (-0.0000) (0.0499)  (0.0000) || SCALERELATIVE: 0.7188 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 4  PARENT:  3  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.6250 || POSITION: (-0.0000) (0.1616)  (0.0000) || SCALERELATIVE: 0.2812 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 5  PARENT:  4  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.5625 || POSITION: (-0.0000) (0.2721)  (-0.0112)|| SCALERELATIVE: 0.2031 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
+	|| ID: 6  PARENT:  0  || SYMMETRIC: -1 || FLAGS: 1088 TYPE: 2 || SCALE: 0.9277 || POSITION: (-0.0000) (-0.3648) (-0.0963)|| SCALERELATIVE: 0.4277 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 1014894446 || GROUPID: 1080123392 INSTANCEID: 2714007141 ||
+	|| ID: 7  PARENT:  2  || SYMMETRIC: -1 || FLAGS: 512  TYPE: 2 || SCALE: 0.8607 || POSITION: (-0.0000) (-0.0390) (0.0634) || SCALERELATIVE: 0.3607 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 1729351260 ||
+	|| ID: 8  PARENT:  3  || SYMMETRIC: -1 || FLAGS: 512  TYPE: 2 || SCALE: 1.0779 || POSITION: (-0.0000) (0.1459)  (0.0480) || SCALERELATIVE: 0.5779 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 1729351260 ||
+	|| ID: 9  PARENT:  3  || SYMMETRIC: 10 || FLAGS: 2304 TYPE: 2 || SCALE: 1.0779 || POSITION: ( 0.2018) (0.0860)  (-0.1000)|| SCALERELATIVE: 0.5779 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 898723801  ||
+	|| ID: 10 PARENT:  3  || SYMMETRIC: 9  || FLAGS: 2048 TYPE: 2 || SCALE: 1.0779 || POSITION: (-0.2019) (0.0860)  (-0.1000)|| SCALERELATIVE: 0.5779 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 2053914431 ||
+	/*
+		InstanceID        uint32        // uint32_t mInstanceID */
+	// InstanceID need to store in the db, because the game needs to create the instance id?
 	ids := strings.Split(s, "#")
 	var r Rigblock
 	for _, part := range ids {
 		parts := strings.Split(part, "+")
 
-		len := len(parts)
+		partsLen := len(parts)
 
-		switch len {
-		case 14:
-			{
-				id, _ := strconv.ParseInt(parts[0], 10, 16)
-				r.ID = int16(id)
-			}
+		switch partsLen {
+		// other not known yet
 		case 15:
 			{
+				rId, _ := strconv.ParseInt(parts[0], 10, 16)
+				rParent, _ := strconv.ParseInt(parts[1], 10, 16)
+				rSymmetric, _ := strconv.ParseInt(parts[2], 10, 16)
+				rFlags, _ := strconv.ParseInt(parts[3], 10, 16)
+				rType, _ := strconv.Atoi(parts[4])
+				rScale, _ := strconv.ParseFloat(parts[5], 32)
+				var rPos types.Position
+				rPos.Scan(strings.Join(parts[6:9], "+"))
+				rScaleRelative, _ := strconv.ParseFloat(parts[7], 32)
+				rMuscleScale, _ := strconv.ParseFloat(parts[8], 32)
+				rMuscleScaleBase, _ := strconv.ParseFloat(parts[9], 32)
+				rFootWeaponOrMouth, _ := strconv.ParseUint(parts[10], 10, 32)
+				rGroupID, _ := strconv.ParseUint(parts[10], 10, 32)
+				rInstanceID, _ := strconv.ParseUint(parts[11], 10, 32)
 
+				return &Rigblock{
+					ID:                int16(rId),
+					Parent:            int16(rParent),
+					Symmetric:         int16(rSymmetric),
+					Flags:             int16(rFlags),
+					Type:              rType,
+					Scale:             float32(rScale),
+					Position:          rPos,
+					ScaleRelative:     float32(rScaleRelative),
+					MuscleScale:       float32(rMuscleScale),
+					MuscleScaleBase:   float32(rMuscleScaleBase),
+					FootWeaponOrMouth: uint32(rFootWeaponOrMouth),
+					GroupID:           uint32(rGroupID),
+					InstanceID:        uint32(rInstanceID),
+				}
 			}
 		}
 	}

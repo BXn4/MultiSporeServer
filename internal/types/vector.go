@@ -1,4 +1,4 @@
-package simple
+package types
 
 import (
 	"database/sql/driver"
@@ -8,10 +8,6 @@ import (
 )
 
 type Vector3 [3]float32
-
-func NewVector3() Vector3 {
-	return Vector3{}
-}
 
 func (v Vector3) X() float32 {
 	return v[0]
