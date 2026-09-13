@@ -54,3 +54,13 @@ func (p *Position) Scan(value interface{}) error {
 	*p = pos
 	return nil
 }
+
+func (p Position) String() string {
+	elements := []string{
+		strconv.FormatFloat(float64(p.X), 'f', 6, 32),
+		strconv.FormatFloat(float64(p.Y), 'f', 6, 32),
+		strconv.FormatFloat(float64(p.Z), 'f', 6, 32),
+	}
+
+	return strings.Join(elements, "+")
+}

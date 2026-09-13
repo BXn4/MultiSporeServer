@@ -92,7 +92,9 @@ const (
 	isAsymmetric = 4096
 )
 
-func (r *Rigblock) Scan(value interface{}) error {
+type Rigblocks []Rigblock
+
+func (r *Rigblocks) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
@@ -111,11 +113,11 @@ func (r *Rigblock) Scan(value interface{}) error {
 		return fmt.Errorf("Failed to parse creature string: %s", str)
 	}
 
-	*r = *creature
+	*r = creature
 	return nil
 }
 
-func NewRigblockFromString(s string) *Rigblock {
+func NewRigblockFromString(s string) []Rigblock {
 	/* CELL
 	|| ID: 0  PARENT: -1  || SYMMETRIC: -1 || FLAGS: 11   TYPE: 5 || SCALE: 0.4000 || POSITION: (-0.0000) (-0.2851) (0.0000) || SCALERELATIVE: 0.0000 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
 	|| ID: 1  PARENT:  0  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.6000 || POSITION: (-0.0000) (-0.1734) (0.0000) || SCALERELATIVE: 0.2500 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
@@ -132,7 +134,7 @@ func NewRigblockFromString(s string) *Rigblock {
 		InstanceID        uint32        // uint32_t mInstanceID */
 	// InstanceID need to store in the db, because the game needs to create the instance id?
 	ids := strings.Split(s, "#")
-	var r Rigblock
+	r := make([]Rigblock, 0, len(ids))
 	for _, part := range ids {
 		parts := strings.Split(part, "+")
 
@@ -149,15 +151,15 @@ func NewRigblockFromString(s string) *Rigblock {
 				rType, _ := strconv.Atoi(parts[4])
 				rScale, _ := strconv.ParseFloat(parts[5], 32)
 				var rPos types.Position
-				rPos.Scan(strings.Join(parts[6:9], "+"))
-				rScaleRelative, _ := strconv.ParseFloat(parts[7], 32)
-				rMuscleScale, _ := strconv.ParseFloat(parts[8], 32)
-				rMuscleScaleBase, _ := strconv.ParseFloat(parts[9], 32)
-				rFootWeaponOrMouth, _ := strconv.ParseUint(parts[10], 10, 32)
-				rGroupID, _ := strconv.ParseUint(parts[10], 10, 32)
-				rInstanceID, _ := strconv.ParseUint(parts[11], 10, 32)
+				rPos.Scan(strings.Join(parts[6:8], "+"))
+				rScaleRelative, _ := strconv.ParseFloat(parts[9], 32)
+				rMuscleScale, _ := strconv.ParseFloat(parts[10], 32)
+				rMuscleScaleBase, _ := strconv.ParseFloat(parts[11], 32)
+				rFootWeaponOrMouth, _ := strconv.ParseUint(parts[12], 10, 32)
+				rGroupID, _ := strconv.ParseUint(parts[13], 10, 32)
+				rInstanceID, _ := strconv.ParseUint(parts[14], 10, 32)
 
-				return &Rigblock{
+				r = append(r, Rigblock{
 					ID:                int16(rId),
 					Parent:            int16(rParent),
 					Symmetric:         int16(rSymmetric),
@@ -171,11 +173,11 @@ func NewRigblockFromString(s string) *Rigblock {
 					FootWeaponOrMouth: uint32(rFootWeaponOrMouth),
 					GroupID:           uint32(rGroupID),
 					InstanceID:        uint32(rInstanceID),
-				}
+				})
 			}
 		}
 	}
-	return &r
+	return r
 }
 
 func (rb Rigblock) GetPartType() string {
@@ -206,6 +208,43 @@ func (rb Rigblock) GetPartType() string {
 	}
 }
 
-func (rb Rigblock) String() string {
-	return strings.Join([]string{}, "+")
+/*
+ID:                int16(rId),
+Parent:            int16(rParent),
+Symmetric:         int16(rSymmetric),
+Flags:             int16(rFlags),
+Type:              rType,
+Scale:             float32(rScale),
+Position:          rPos,
+ScaleRelative:     float32(rScaleRelative),
+MuscleScale:       float32(rMuscleScale),
+MuscleScaleBase:   float32(rMuscleScaleBase),
+FootWeaponOrMouth: uint32(rFootWeaponOrMouth),
+GroupID:           uint32(rGroupID),
+InstanceID:        uint32(rInstanceID),
+*/
+
+func (rb Rigblock) string() string {
+	return fmt.Sprintf("%d+%d+%d+%d+%d+%f+%s+%f+%f+%f+%d+%d+%d",
+		rb.ID,
+		rb.Parent,
+		rb.Symmetric,
+		rb.Flags,
+		rb.Type,
+		rb.Scale,
+		rb.Position.String(),
+		rb.ScaleRelative,
+		rb.MuscleScale,
+		rb.MuscleScaleBase,
+		rb.FootWeaponOrMouth,
+		rb.GroupID,
+		rb.InstanceID)
+}
+
+func String(rigblocks []Rigblock) string {
+	entries := make([]string, len(rigblocks))
+	for i, rb := range rigblocks {
+		entries[i] = rb.string()
+	}
+	return strings.Join(entries, "#")
 }

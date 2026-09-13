@@ -5,6 +5,7 @@ import (
 	"multispore/internal/client"
 	"multispore/internal/database"
 	"multispore/internal/managers"
+	"multispore/internal/models/creature"
 	"net"
 	"os"
 	"os/signal"
@@ -60,6 +61,9 @@ func (s *Server) Run() {
 	defer listener.Close()
 
 	log.Infof("Server: [%s] started, and listening on %s", s.config.Name, address)
+
+	rb := creature.NewRigblockFromString("0+-1+-1+11+5+0.4000+-0.0000+-0.2851+0.0000+0.0000+0.0000+1.0000+0+1080123392+3244096132#1+0+-1+9+5+0.6000+-0.0000+-0.1734+0.0000+0.2500+0.0000+1.0000+0+1080123392+3244096132#")
+	log.Info(creature.String(rb))
 
 	// Handle connections
 	go func() {
