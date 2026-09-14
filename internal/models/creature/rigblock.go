@@ -151,7 +151,7 @@ func NewRigblockFromString(s string) []Rigblock {
 				rType, _ := strconv.Atoi(parts[4])
 				rScale, _ := strconv.ParseFloat(parts[5], 32)
 				var rPos types.Position
-				rPos.Scan(strings.Join(parts[6:8], "+"))
+				rPos.Scan(strings.Join(parts[6:9], "+"))
 				rScaleRelative, _ := strconv.ParseFloat(parts[9], 32)
 				rMuscleScale, _ := strconv.ParseFloat(parts[10], 32)
 				rMuscleScaleBase, _ := strconv.ParseFloat(parts[11], 32)

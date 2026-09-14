@@ -36,15 +36,29 @@ func (gm *GameManager) GetClient(id int) (interfaces.ManagedItem, error) {
 	defer gm.clientMutex.Unlock()
 
 	for _, c := range gm.clients {
-		/* if c.Player == nil {
-		continue
-		} */
-		//if c.Player.GetID() == id {
-		return c, nil
-		//}
+		if c.Player == nil {
+			continue
+		}
+		if c.Player.ID == id {
+			return c, nil
+		}
 	}
 
 	return nil, fmt.Errorf("Client with ID %v not found", id)
+}
+
+func (gm *GameManager) GetClientByName(name string) (*client.Client, error) {
+	gm.clientMutex.Lock()
+	defer gm.clientMutex.Unlock()
+	for _, c := range gm.clients {
+		if c.Player == nil {
+			continue
+		}
+		if c.Player.Username == name {
+			return c, nil
+		}
+	}
+	return nil, fmt.Errorf("Client with username %v not found", name)
 }
 
 func (gm *GameManager) DisconnectClient(id int) {
@@ -61,4 +75,17 @@ func (gm *GameManager) DisconnectClient(id int) {
 
 	log.Info("[Disconnect] Disconnecting client id:", id)
 	log.Info("[Disconnect] Client removed, remaining clients:", len(gm.clients))
+}
+
+func (gm *GameManager) UnsafeIsOnline(id int) bool {
+	for _, c := range gm.clients {
+		if c.Player == nil {
+			continue
+		}
+		if c.Player.ID == id {
+			return true
+		}
+	}
+
+	return false
 }

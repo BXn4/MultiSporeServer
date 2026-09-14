@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"multispore/internal/models/creature"
+	"multispore/internal/models/player"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -46,10 +48,10 @@ func ConnectToDB(config *DBConfig) (*Database, error) {
 		}
 	}
 
-	/*err = db.AutoMigrate(&player.Player{}, &cafe.Cafe{}, &coops.Coop{})
+	err = db.AutoMigrate(&player.Player{}, &creature.Creature{})
 	if err != nil {
 		return nil, err
-		}*/
+	}
 
 	database := &Database{conn: db}
 

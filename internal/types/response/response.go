@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	S2C_CONNECT    = "cnc"
-	S2C_DISCONNECT = "dnc"
+	S2C_CONNECT       = "cnc"
+	S2C_DISCONNECT    = "dnc"
+	S2C_CREATURE_DATA = "cda"
 )
 
 type Response interface {

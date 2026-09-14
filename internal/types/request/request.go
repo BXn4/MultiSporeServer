@@ -11,12 +11,14 @@ const (
 	UNKNOWN RequestKind = iota
 	C2S_CONNECT
 	C2S_DISCONNECT
+	C2S_CREATURE_DATA
 )
 
 func LookupRequestKind(kindStr string) RequestKind {
 	kindLookup := map[string]RequestKind{
 		"cnc": C2S_CONNECT,
 		"dnc": C2S_DISCONNECT,
+		"cda": C2S_CREATURE_DATA,
 	}
 
 	if val, ok := kindLookup[kindStr]; ok {

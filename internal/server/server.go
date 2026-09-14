@@ -3,9 +3,9 @@ package server
 import (
 	"fmt"
 	"multispore/internal/client"
+	"multispore/internal/commands"
 	"multispore/internal/database"
 	"multispore/internal/managers"
-	"multispore/internal/models/creature"
 	"net"
 	"os"
 	"os/signal"
@@ -62,9 +62,6 @@ func (s *Server) Run() {
 
 	log.Infof("Server: [%s] started, and listening on %s", s.config.Name, address)
 
-	rb := creature.NewRigblockFromString("0+-1+-1+11+5+0.4000+-0.0000+-0.2851+0.0000+0.0000+0.0000+1.0000+0+1080123392+3244096132#1+0+-1+9+5+0.6000+-0.0000+-0.1734+0.0000+0.2500+0.0000+1.0000+0+1080123392+3244096132#")
-	log.Info(creature.String(rb))
-
 	// Handle connections
 	go func() {
 		for {
@@ -78,21 +75,9 @@ func (s *Server) Run() {
 			log.Infof("Client connected %s ", c.GetIP())
 			c.SetClientID(s.gm.NextClientID())
 			s.gm.AddClient(c)
+			c.Start()
 
-			go func(conn net.Conn) {
-				defer conn.Close()
-				buf := make([]byte, 4096)
-				for {
-					n, err := conn.Read(buf)
-					if err != nil {
-						log.Infof("Connection closed/error: %v", err)
-						return
-					}
-					log.Infof("Received %d bytes: %q", n, buf[:n])
-				}
-			}(conn)
-			//c.Start()
-			//go commands.HandleClient(c, s.gm)*/
+			go commands.HandleClient(c, s.gm)
 		}
 	}()
 	// Wait for interrupt signal

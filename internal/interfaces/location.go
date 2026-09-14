@@ -9,6 +9,9 @@ type Location interface {
 	// Disconnects the player by id
 	Leave(id int)
 
+	// Send message to client
+	Send(arg ...string)
+
 	// Send message to everyone in the location
 	Broadcast(arg ...string)
 

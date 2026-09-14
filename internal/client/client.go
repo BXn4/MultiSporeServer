@@ -3,6 +3,9 @@ package client
 import (
 	"bufio"
 	"io"
+	"multispore/internal/database"
+	"multispore/internal/interfaces"
+	"multispore/internal/models/player"
 	"multispore/internal/types/request"
 	"multispore/internal/types/response"
 	"net"
@@ -13,10 +16,14 @@ import (
 )
 
 type Client struct {
-	ClientID int
-	Conn     net.Conn
-	Writer   *bufio.Writer
-	Reader   *bufio.Reader
+	ClientID      int
+	Conn          net.Conn
+	Writer        *bufio.Writer
+	Reader        *bufio.Reader
+	DB            *database.Database
+	Location      interfaces.Location
+	Player        *player.Player
+	ClientManager interfaces.ClientManager
 
 	TimeoutStamp    time.Time
 	isDisconnecting bool
@@ -49,6 +56,11 @@ func (c *Client) SetClientID(id int) {
 
 func (c *Client) GetIP() string {
 	return strings.Split(c.Conn.RemoteAddr().String(), ":")[0]
+}
+
+func (c *Client) Start() {
+	go c.receiveRequests()
+	go c.sendResponses()
 }
 
 func (c *Client) SendExtensionResponse(args ...string) {
@@ -98,11 +110,7 @@ func (c *Client) sendResponses() {
 
 func (c *Client) Disconnect() error {
 	c.isDisconnecting = true
-
-	log.Infof("Client being disconnected: %s", c.GetIP())
-
 	c.Conn.Close()
-
 	return nil
 }
 
