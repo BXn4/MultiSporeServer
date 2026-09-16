@@ -11,10 +11,11 @@ import (
 func init() {
 	commands.RegisterCommand(request.C2S_CREATURE_DATA,
 		commands.CommandConfig{
-			Name:       "Creature data",
-			Identifier: response.S2C_CREATURE_DATA,
-			MinArgs:    0,
-			MaxArgs:    0,
+			Name:        "Creature data",
+			Description: "Sends creature data to client",
+			Identifier:  response.S2C_CREATURE_DATA,
+			MinArgs:     0,
+			MaxArgs:     0,
 		},
 		nil,
 		CreatureData,
@@ -22,7 +23,6 @@ func init() {
 	)
 }
 
-// CDA - C2S_CREATURE_DATA
 func CreatureData(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) error {
 	return nil
 }

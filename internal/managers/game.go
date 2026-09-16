@@ -2,11 +2,15 @@ package managers
 
 import (
 	"multispore/internal/client"
+	"multispore/internal/database"
 	"sync"
 )
 
 type GameManager struct {
-	locationMutex sync.Mutex
+	db *database.Database
+
+	roomMutex sync.Mutex
+	rooms     map[int]*LoadedRoom
 
 	clientMutex sync.Mutex
 	clients     map[int]*client.Client
