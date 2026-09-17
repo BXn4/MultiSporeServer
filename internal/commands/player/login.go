@@ -19,20 +19,20 @@ func init() {
 			Name:        "Login",
 			Description: "Handles login",
 			Identifier:  response.S2C_LOGIN,
-			MinArgs:     2,
-			MaxArgs:     2,
+			MinArgs:     3,
+			MaxArgs:     3,
 		},
-		nil,
+		LoginValidator,
 		Login,
 		nil,
 	)
 }
 
 func Login(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) error {
-	name := req.Args[2]
-	password := req.Args[3]
+	name := req.Args[1]
+	password := req.Args[2]
 
-	_, statusCode, err := c.DB.Authenticate(name, password)
+	p, statusCode, err := c.DB.Authenticate(name, password)
 
 	if err == nil {
 		log.Infof("Checking if user %s is already logged in", name)
@@ -66,5 +66,33 @@ func Login(req *request.Request, c *client.Client, gm *managers.GameManager, cm 
 		}
 	}
 
+	if p != nil {
+		c.Player = p
+		id := c.Player.ID
+
+		room, err := gm.AddRoom(p.Stage) // return the room if its found. if not, creates new
+
+		if err != nil {
+			return fmt.Errorf("Failed to load location %d: %v", id, err)
+		}
+		c.Location = room
+	}
+
 	return nil
+}
+
+func LoginValidator(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) (string, commands.ErrorCodes) {
+	println(req.Args[1])
+	println(req.Args[2])
+	if len(req.Args) < cm.MinArgs {
+		return fmt.Sprintf("Not enough args. NEEDED/GOT: %d/%d", cm.MinArgs, len(req.Args)), commands.MIN_ARGS
+	}
+
+	if cm.MinArgs > 0 {
+		if len(req.Args) > cm.MaxArgs {
+			return fmt.Sprintf("Too much args. NEEDED/GOT: %d/%d", cm.MaxArgs, len(req.Args)), commands.MAX_ARGS
+		}
+	}
+
+	return "Command ran without any errors.", commands.SUCCESS
 }

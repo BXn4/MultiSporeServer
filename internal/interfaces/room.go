@@ -2,15 +2,14 @@ package interfaces
 
 import "multispore/internal/types/response"
 
-// TEMP!!!
-type Location interface {
+type Room interface {
 	Join(id int, channel chan<- response.Response)
 
 	// Disconnects the player by id
 	Leave(id int)
 
 	// Send message to client
-	Send(arg ...string)
+	Send(id int, arg ...string)
 
 	// Send message to everyone in the location
 	Broadcast(arg ...string)

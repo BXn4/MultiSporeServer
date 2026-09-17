@@ -1,0 +1,2 @@
+Handle register from the client
+The client will receive a dialog, with login + register. when the client clicks on the register, creates a simple register dialog, where the client can choose an username, and a password, and also can create a custom cell creature (just the starting creatue), changing the colors, parts position maybe?

@@ -8,7 +8,6 @@ import (
 type Player struct {
 	ID        int               `gorm:"column:id;primaryKey;autoIncrement;type:int"`
 	Username  string            `gorm:"column:username;type:string;not null"`
-	Email     string            `gorm:"column:email;type:string;not null"`
 	Password  string            `gorm:"column:password;type:string;not null"`
 	DNAPoints int               `gorm:"column:dna_points;type:int;default:0"`
 	Creature  creature.Creature `gorm:"column:creature;type:text"`

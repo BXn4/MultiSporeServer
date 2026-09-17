@@ -21,7 +21,7 @@ type Client struct {
 	Writer        *bufio.Writer
 	Reader        *bufio.Reader
 	DB            *database.Database
-	Location      interfaces.Location
+	Location      interfaces.Room
 	Player        *player.Player
 	ClientManager interfaces.ClientManager
 
@@ -32,12 +32,14 @@ type Client struct {
 	ResponseQueue chan response.Response
 }
 
-func New(conn net.Conn) *Client {
+func New(conn net.Conn, db *database.Database, cm interfaces.ClientManager) *Client {
 	return &Client{
-		ClientID: 0,
-		Conn:     conn,
-		Reader:   bufio.NewReader(conn),
-		Writer:   bufio.NewWriter(conn),
+		ClientID:      0,
+		Conn:          conn,
+		Reader:        bufio.NewReader(conn),
+		Writer:        bufio.NewWriter(conn),
+		DB:            db,
+		ClientManager: cm,
 
 		TimeoutStamp: time.Now(),
 

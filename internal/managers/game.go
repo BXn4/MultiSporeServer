@@ -18,6 +18,7 @@ type GameManager struct {
 
 func NewGameManager() (*GameManager, error) {
 	gm := &GameManager{
+		rooms:   make(map[int]*LoadedRoom, 0),
 		clients: make(map[int]*client.Client, 0),
 	}
 

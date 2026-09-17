@@ -11,7 +11,7 @@ import (
 
 func (db *Database) Authenticate(name string, pass string) (*player.Player, int, error) {
 	var p player.Player
-	err := db.conn.Where("username = ? OR email = ?", name, name).First(&p).Error
+	err := db.conn.Where("username = ?", name).First(&p).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, 1, fmt.Errorf("Player \"%v\" not found!", name)

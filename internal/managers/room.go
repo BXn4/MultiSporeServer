@@ -24,19 +24,22 @@ func (gm *GameManager) RemoveRoom(id int) {
 	defer gm.roomMutex.Unlock()
 }
 
-func (gm *GameManager) AddRoom(id int, stage types.Stages) (*LoadedRoom, error) {
+func (gm *GameManager) AddRoom(stage types.Stages) (*LoadedRoom, error) {
 	gm.roomMutex.Lock()
 	defer gm.roomMutex.Unlock()
 
-	loc, err := gm.getRoomByStage(stage)
+	item, err := gm.getRoomByStage(stage)
 	if err == nil {
-		return loc, nil
+		return item, nil
 	}
 
+	id := len(gm.rooms)
+	loc := &LoadedRoom{
+		stage: stage,
+	}
 	gm.rooms[id] = loc
-	loc.stage = stage
 
-	log.Info("Added Room")
+	log.Infof("Added Room: [%d] stage: %d", id, stage)
 
 	return loc, nil
 }

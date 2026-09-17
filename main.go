@@ -8,6 +8,8 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/joho/godotenv"
+
+	_ "multispore/internal/commands/player"
 )
 
 func main() {

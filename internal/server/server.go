@@ -71,7 +71,7 @@ func (s *Server) Run() {
 			}
 			defer conn.Close()
 
-			c := client.New(conn)
+			c := client.New(conn, db, s.gm)
 			log.Infof("Client connected %s ", c.GetIP())
 			c.SetClientID(s.gm.NextClientID())
 			s.gm.AddClient(c)

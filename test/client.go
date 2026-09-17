@@ -10,6 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const END_CHAR = "\x00"
+
 func main() {
 	envFile, err := godotenv.Read("../.env")
 
@@ -30,10 +32,7 @@ func main() {
 
 	log.Info("Connected to the server!")
 
-	/*_, err = fmt.Fprintf(conn, "")
-	if err != nil {
-		log.Fatal(err)
-		}*/
+	conn.Write([]byte("%xt%spore%lgn%1%2" + END_CHAR))
 
 	buf := make([]byte, 4096)
 	n, err := conn.Read(buf)
