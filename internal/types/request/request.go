@@ -13,6 +13,7 @@ const (
 	C2S_DISCONNECT
 	C2S_CREATURE_DATA
 	C2S_LOGIN
+	C2S_REGISTER
 )
 
 func LookupRequestKind(kindStr string) RequestKind {
@@ -21,6 +22,7 @@ func LookupRequestKind(kindStr string) RequestKind {
 		"dnc": C2S_DISCONNECT,
 		"cda": C2S_CREATURE_DATA,
 		"lgn": C2S_LOGIN,
+		"rgr": C2S_REGISTER,
 	}
 
 	if val, ok := kindLookup[kindStr]; ok {

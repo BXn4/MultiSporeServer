@@ -6,5 +6,6 @@ type Creature struct {
 	Name      string      `gorm:"column:name;type:string;not null"`
 	Rigblocks []Rigblocks `gorm:"column:rigblocks;type:string;not null"`
 	Health    float32     `gorm:"column:health;type:int;not null"`
-	MaxHealth float32     `gorm:"column:max_healthtype:int;not null"`
+	MaxHealth float32     `gorm:"column:max_health;type:int;not null"`
+	Hunger    float32     `gorm:"column:hunger;type:int;not null"`
 }

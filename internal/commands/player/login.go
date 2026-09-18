@@ -1,4 +1,4 @@
-package server
+package player
 
 import (
 	"fmt"
@@ -81,18 +81,16 @@ func Login(req *request.Request, c *client.Client, gm *managers.GameManager, cm 
 	return nil
 }
 
-func LoginValidator(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) (string, commands.ErrorCodes) {
-	println(req.Args[1])
-	println(req.Args[2])
+func LoginValidator(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) (error, commands.ErrorCodes) {
 	if len(req.Args) < cm.MinArgs {
-		return fmt.Sprintf("Not enough args. NEEDED/GOT: %d/%d", cm.MinArgs, len(req.Args)), commands.MIN_ARGS
+		return fmt.Errorf("Not enough args. NEEDED/GOT: %d/%d", cm.MinArgs, len(req.Args)), commands.MIN_ARGS
 	}
 
 	if cm.MinArgs > 0 {
 		if len(req.Args) > cm.MaxArgs {
-			return fmt.Sprintf("Too much args. NEEDED/GOT: %d/%d", cm.MaxArgs, len(req.Args)), commands.MAX_ARGS
+			return fmt.Errorf("Too much args. NEEDED/GOT: %d/%d", cm.MaxArgs, len(req.Args)), commands.MAX_ARGS
 		}
 	}
 
-	return "Command ran without any errors.", commands.SUCCESS
+	return nil, commands.SUCCESS
 }

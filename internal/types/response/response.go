@@ -9,6 +9,7 @@ const (
 	S2C_DISCONNECT    = "dnc"
 	S2C_CREATURE_DATA = "cda"
 	S2C_LOGIN         = "lgn"
+	S2C_REGISTER      = "rgr"
 )
 
 type Response interface {

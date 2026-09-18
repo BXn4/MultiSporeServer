@@ -13,7 +13,7 @@ import (
 
 type Command struct {
 	Config    CommandConfig
-	Validator func(req *request.Request, c *client.Client, gm *managers.GameManager, cm *CommandConfig) (string, ErrorCodes)
+	Validator func(req *request.Request, c *client.Client, gm *managers.GameManager, cm *CommandConfig) (error, ErrorCodes)
 	Handler   func(req *request.Request, c *client.Client, gm *managers.GameManager, cm *CommandConfig) error
 	DBSaver   func(c *client.Client) error
 }
@@ -36,7 +36,7 @@ var Commands = map[request.RequestKind]Command{}
 func RegisterCommand(
 	kind request.RequestKind,
 	commandConfig CommandConfig,
-	commandValidator func(*request.Request, *client.Client, *managers.GameManager, *CommandConfig) (string, ErrorCodes),
+	commandValidator func(*request.Request, *client.Client, *managers.GameManager, *CommandConfig) (error, ErrorCodes),
 	commandHandler func(*request.Request, *client.Client, *managers.GameManager, *CommandConfig) error,
 	commandDBSaver func(*client.Client) error,
 ) {
@@ -48,9 +48,9 @@ func RegisterCommand(
 	}
 }
 
-func ErrorHandler(req *request.Request, c *client.Client, cm *CommandConfig, reason string, errc ErrorCodes) error {
+func ErrorHandler(req *request.Request, c *client.Client, cm *CommandConfig, err error, errc ErrorCodes) error {
 	c.SendExtensionResponse(cm.Identifier, "-1", strconv.Itoa(int(errc)), strings.Join(req.Args[2:], "%"))
-	return fmt.Errorf("Command %s failed with error code: %d.\n---> Reason: %s", cm.Name, errc, reason)
+	return fmt.Errorf("Command %s failed with error code: %d.\n---> Reason: %s", cm.Name, errc, err.Error())
 }
 
 func HandleClient(c *client.Client, gm *managers.GameManager) {
@@ -80,7 +80,7 @@ func HandleRequest(req *request.Request, c *client.Client, gm *managers.GameMana
 			Name:       req.Args[0],
 			Identifier: req.Args[0],
 		}
-		return ErrorHandler(req, c, &cm, "The command is not implemented", NOT_IMPLEMENTED)
+		return ErrorHandler(req, c, &cm, fmt.Errorf("The command is not implemented"), NOT_IMPLEMENTED)
 	}
 
 	// log.Debugf("Handling command: %s", command.Config.Name)
@@ -88,11 +88,11 @@ func HandleRequest(req *request.Request, c *client.Client, gm *managers.GameMana
 	// command error = int
 	// all error codes what the cafe having in int
 	if command.Validator != nil {
-		reason, commandError := command.Validator(req, c, gm, &command.Config)
+		err, commandError := command.Validator(req, c, gm, &command.Config)
 
 		// If theres an ANY error, then dont run the handler.
 		if commandError != SUCCESS {
-			return ErrorHandler(req, c, &command.Config, reason, commandError)
+			return ErrorHandler(req, c, &command.Config, err, commandError)
 		}
 	}
 

@@ -5,6 +5,8 @@ import (
 	"multispore/internal/types"
 	"strconv"
 	"strings"
+
+	"github.com/charmbracelet/log"
 )
 
 /* CELL STAGE
@@ -108,8 +110,8 @@ func (r *Rigblocks) Scan(value interface{}) error {
 		str = string(bytes)
 	}
 
-	creature := NewRigblockFromString(str)
-	if creature == nil {
+	creature, err := NewRigblockFromString(str)
+	if err != nil {
 		return fmt.Errorf("Failed to parse creature string: %s", str)
 	}
 
@@ -117,7 +119,7 @@ func (r *Rigblocks) Scan(value interface{}) error {
 	return nil
 }
 
-func NewRigblockFromString(s string) []Rigblock {
+func NewRigblockFromString(s string) ([]Rigblock, error) {
 	/* CELL
 	|| ID: 0  PARENT: -1  || SYMMETRIC: -1 || FLAGS: 11   TYPE: 5 || SCALE: 0.4000 || POSITION: (-0.0000) (-0.2851) (0.0000) || SCALERELATIVE: 0.0000 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
 	|| ID: 1  PARENT:  0  || SYMMETRIC: -1 || FLAGS: 9    TYPE: 5 || SCALE: 0.6000 || POSITION: (-0.0000) (-0.1734) (0.0000) || SCALERELATIVE: 0.2500 || MUSCLESCALE: 0.0000 MUSCLESCALERELATIVE: 1.0000 || FOOTWEAPONORMOUTH: 0 	      || GROUPID: 1080123392 INSTANCEID: 3244096132 ||
@@ -136,6 +138,10 @@ func NewRigblockFromString(s string) []Rigblock {
 	ids := strings.Split(s, "#")
 	r := make([]Rigblock, 0, len(ids))
 	for _, part := range ids {
+		if part == "" {
+			continue
+		}
+
 		parts := strings.Split(part, "+")
 
 		partsLen := len(parts)
@@ -175,9 +181,12 @@ func NewRigblockFromString(s string) []Rigblock {
 					InstanceID:        uint32(rInstanceID),
 				})
 			}
+		default:
+			return nil, fmt.Errorf("Failed to create a new rigblock from string, because the length of the parts: (%d) not supported!", partsLen)
 		}
 	}
-	return r
+
+	return r, nil
 }
 
 func (rb Rigblock) GetPartType() string {
@@ -244,6 +253,7 @@ func (rb Rigblock) string() string {
 func String(rigblocks []Rigblock) string {
 	entries := make([]string, len(rigblocks))
 	for i, rb := range rigblocks {
+		log.Info(rb.GetPartType())
 		entries[i] = rb.string()
 	}
 	return strings.Join(entries, "#")
