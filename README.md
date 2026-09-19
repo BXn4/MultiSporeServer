@@ -15,3 +15,12 @@ Heres what I done so far:
 I have sent the starting cell creature to the server, and I parsed it in the server side, and created a custom object.
 See in: internal/models/creature/rigblock.go
 Each part is tagged with '+' and new parts (IDs) sepperated with '#'
+
+Please note that, I'm doing it in my free time, and also need to deep drive into the reverse engineered SporeModAPI SDK to understand the capabilites, etc...
+
+The server is currently being ported from one of my custom tcp socket server: https://github.com/BXn4/CafeServerGo
+The client will be ported to a custom Smartfox like extension: https://smartfoxserver.com/
+
+Theres a test client in the server: test/client.go to test some of the client behaviour.
+
+Status: Work In Progess!
