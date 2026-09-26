@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"multispore/internal/models/creature"
 	"multispore/internal/models/player"
+	"multispore/internal/types"
 
+	"github.com/charmbracelet/log"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
@@ -34,13 +36,13 @@ func ConnectToDB(config *DBConfig) (*Database, error) {
 	sqlDB.SetMaxIdleConns(1)
 
 	pragmas := []string{
-		"PRAGMA journal_mode=WAL",    // Allows concurrent reads during writes
-		"PRAGMA busy_timeout=5000",   // Prevents immediate "locked" errors
-		"PRAGMA synchronous=NORMAL",  // Good for WAL mode (faster than FULL)
-		"PRAGMA cache_size=-128000",  // 128MB cache (negative = KB)
-		"PRAGMA foreign_keys=ON",     // Good practice for data integrity
-		"PRAGMA temp_store=memory",   // Faster temporary operations
-		"PRAGMA mmap_size=268435456", // 256MB memory-mapped I/O (faster reads)
+		"PRAGMA journal_mode=WAL",
+		"PRAGMA busy_timeout=5000",
+		"PRAGMA synchronous=NORMAL",
+		"PRAGMA cache_size=-128000",
+		"PRAGMA foreign_keys=ON",
+		"PRAGMA temp_store=memory",
+		"PRAGMA mmap_size=268435456",
 	}
 	for _, pragma := range pragmas {
 		if _, err := sqlDB.Exec(pragma); err != nil {
@@ -64,4 +66,33 @@ func (db *Database) Close() error {
 		return err
 	}
 	return sqlDB.Close()
+}
+
+func (db *Database) CreateAccount(name, password string, creature creature.Creature) (*player.Player, error) {
+	hashedPasswd, err := HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	player := &player.Player{
+		Username: name,
+		Password: hashedPasswd,
+		Creature: creature,
+		Stage:    types.CELL,
+	}
+
+	err = db.conn.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(player).Error; err != nil {
+			return fmt.Errorf("Cant create player: %w", err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info("Registered!")
+
+	return player, nil
 }

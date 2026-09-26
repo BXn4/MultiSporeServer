@@ -9,6 +9,8 @@ import (
 	"multispore/internal/types/request"
 	"multispore/internal/types/response"
 	"strings"
+
+	"github.com/charmbracelet/log"
 )
 
 func init() {
@@ -31,7 +33,31 @@ var invalidChars = "+%&*/()[]{}\"'\\´`^°§€²³,;:?µ$"
 
 // username+pass+creature
 func Register(req *request.Request, c *client.Client, gm *managers.GameManager, cm *commands.CommandConfig) error {
-	c.SendExtensionResponse(cm.Identifier, "1", "statusCodeStr")
+	username := req.Args[1]
+	password := req.Args[2]
+	rigblocks := req.Args[3]
+
+	log.Debug("Everything is fine! Player register should start")
+
+	creature := creature.NewCreatureFromString(rigblocks)
+	creature.Health = 6
+	creature.MaxHealth = creature.Health
+	creature.Hunger = 0
+
+	log.Debugf("Player creature: %s", creature.Rigblocks.String())
+
+	player, err := c.DB.CreateAccount(username, password, *creature)
+	if err != nil {
+		return err
+	}
+	c.Player = player
+	room, err := gm.AddRoom(c.Player.GetStage())
+	if err != nil {
+		return fmt.Errorf("Failed to load room for player %d: %v", c.Player.GetID(), err)
+	}
+
+	c.Location = room
+
 	return nil
 }
 
@@ -48,34 +74,40 @@ func RegisterValidator(req *request.Request, c *client.Client, gm *managers.Game
 
 	username := req.Args[1]
 	password := req.Args[2]
-	creatureData := req.Args[3]
+	rigblocks := req.Args[3]
 
 	if len(username) < 4 {
-		return fmt.Errorf("Can't register the player, because the username is short!"), -1
+		return fmt.Errorf("Can't register the player, because the username is short!"), commands.USERNAME_SHORT
+	}
+
+	if len(username) > 32 {
+		return fmt.Errorf("Can't register the player, because the username is long!"), commands.USERNAME_LONG
 	}
 
 	if strings.ContainsAny(username, invalidChars) {
-		return fmt.Errorf("Can't register the player, because the username is wrong / contains not allowed chars!"), -1
+		return fmt.Errorf("Can't register the player, because the username is wrong / contains not allowed chars!"), commands.USERNAME_WRONG
 	}
 
 	if len(password) < 4 {
-		return fmt.Errorf("Can't register the player, because the password is short!"), -1
+		return fmt.Errorf("Can't register the player, because the password is short!"), commands.PASSWORD_SHORT
+	}
+
+	if len(username) > 64 {
+		return fmt.Errorf("Can't register the player, because the password is long!"), commands.PASSWORD_LONG
 	}
 
 	if strings.ContainsAny(password, invalidChars) {
-		return fmt.Errorf("Can't register the player, because the password is containts invalid chars!"), -1
+		return fmt.Errorf("Can't register the player, because the password is containts invalid chars!"), commands.PASSWORD_WRONG
 	}
 
-	r, err := creature.NewRigblockFromString(creatureData)
-	if err != nil {
-		return err, -1
+	creature := creature.NewCreatureFromString(rigblocks)
+	if creature == nil {
+		return fmt.Errorf("Failed to create a new creature from string!"), commands.INVALID_CREATURE_DATA
 	}
 
-	creature.String(r)
-
-	_, err = c.DB.GetPlayerByName(username)
+	_, err := c.DB.GetPlayerByName(username)
 	if err == nil {
-		return err, -1
+		return fmt.Errorf("Account exist!"), commands.ACCOUNT_EXIST
 	}
 
 	return nil, commands.SUCCESS

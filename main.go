@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	envFile, err := godotenv.Read(".env")
 
 	hasConfig := err == nil

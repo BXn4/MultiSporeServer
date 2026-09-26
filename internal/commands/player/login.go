@@ -8,6 +8,7 @@ import (
 	"multispore/internal/types/request"
 	"multispore/internal/types/response"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -90,6 +91,33 @@ func LoginValidator(req *request.Request, c *client.Client, gm *managers.GameMan
 		if len(req.Args) > cm.MaxArgs {
 			return fmt.Errorf("Too much args. NEEDED/GOT: %d/%d", cm.MaxArgs, len(req.Args)), commands.MAX_ARGS
 		}
+	}
+
+	username := req.Args[1]
+	password := req.Args[2]
+
+	if len(username) < 4 {
+		return fmt.Errorf("Minimum username length is 4!"), commands.USERNAME_SHORT
+	}
+
+	if len(username) > 32 {
+		return fmt.Errorf("Maximum username length is 32!"), commands.USERNAME_LONG
+	}
+
+	if strings.ContainsAny(username, invalidChars) {
+		return fmt.Errorf("Can't login the player, because the username is wrong / contains not allowed chars!"), commands.USERNAME_WRONG
+	}
+
+	if len(password) < 4 {
+		return fmt.Errorf("Minimum password length is 4!"), commands.PASSWORD_SHORT
+	}
+
+	if len(password) > 64 {
+		return fmt.Errorf("Maxmimum password length is 64!"), commands.PASSWORD_LONG
+	}
+
+	if strings.ContainsAny(password, invalidChars) {
+		return fmt.Errorf("Can't login the player, because the password is containts invalid chars!"), commands.PASSWORD_WRONG
 	}
 
 	return nil, commands.SUCCESS

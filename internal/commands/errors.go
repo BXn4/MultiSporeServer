@@ -4,6 +4,18 @@ type ErrorCodes int
 
 const (
 	SUCCESS = 0
+
+	// REGISTER + LOGIN
+	USERNAME_WRONG          = 1
+	USERNAME_SHORT          = 2
+	USERNAME_LONG           = 3
+	PASSWORD_WRONG          = 4
+	PASSWORD_SHORT          = 5
+	PASSWORD_LONG           = 6
+	PASSWORD_INVALID        = 7
+	USER_ALREADY_REGISTERED = 8
+	ACCOUNT_EXIST           = 9
+	INVALID_CREATURE_DATA   = 10
 )
 
 const (
