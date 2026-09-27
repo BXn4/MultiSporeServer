@@ -1,7 +1,7 @@
 package creature
 
 type Creature struct {
-	ID        int       `gorm:"column:id;type:int;not null"`          // creatureID
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement"`   // creatureID
 	PlayerID  int       `gorm:"column:player_id;type:int;not null"`   // creatorPlayerID
 	Name      string    `gorm:"column:name;type:string;not null"`     // creatureName
 	Rigblocks Rigblocks `gorm:"column:rigblock;type:string;not null"` // rigblocks

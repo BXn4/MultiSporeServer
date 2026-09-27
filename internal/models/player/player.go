@@ -8,13 +8,15 @@ import (
 )
 
 type Player struct {
-	ID        int               `gorm:"column:id;primaryKey;autoIncrement;type:int"`
-	Username  string            `gorm:"column:username;type:string;not null"`
-	Password  string            `gorm:"column:password;type:string;not null"`
-	DNAPoints int               `gorm:"column:dna_points;type:int;default:0"`
-	Creature  creature.Creature `gorm:"foreignKey:PlayerID"`
-	Stage     types.Stages      `gorm:"column:stage;type:int;default:0"`
-	mutex     sync.Mutex        `gorm:"-"`
+	ID         int          `gorm:"column:id;primaryKey;autoIncrement;type:int"`
+	Username   string       `gorm:"column:username;type:string;not null"`
+	Password   string       `gorm:"column:password;type:string;not null"`
+	DNAPoints  int          `gorm:"column:dna_points;type:int;default:0"`
+	CreatureID int          `gorm:"column:creature_id;type:int;not null"`
+	Stage      types.Stages `gorm:"column:stage;type:int;default:0"`
+
+	creature creature.Creature `gorm:"-"`
+	mutex    sync.Mutex        `gorm:"-"`
 }
 
 func (player *Player) TableName() string {
@@ -52,7 +54,8 @@ func (p *Player) SetCreature(v creature.Creature) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	p.Creature = v
+	p.creature = v
+	p.CreatureID = v.ID
 }
 
 func (p *Player) SetStage(v types.Stages) {
@@ -89,4 +92,18 @@ func (p *Player) GetStage() types.Stages {
 	defer p.mutex.Unlock()
 
 	return p.Stage
+}
+
+func (p *Player) GetCreature() creature.Creature {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	return p.creature
+}
+
+func (p *Player) GetCreatureID() int {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	return p.CreatureID
 }

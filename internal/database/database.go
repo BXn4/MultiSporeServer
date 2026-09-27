@@ -77,7 +77,6 @@ func (db *Database) CreateAccount(name, password string, creature creature.Creat
 	player := &player.Player{
 		Username: name,
 		Password: hashedPasswd,
-		Creature: creature,
 		Stage:    types.CELL,
 	}
 
@@ -85,6 +84,16 @@ func (db *Database) CreateAccount(name, password string, creature creature.Creat
 		if err := tx.Create(player).Error; err != nil {
 			return fmt.Errorf("Cant create player: %w", err)
 		}
+
+		creature.PlayerID = player.GetID()
+		if err := tx.Create(&creature).Error; err != nil {
+			return fmt.Errorf("Cant create creature: %w", err)
+		}
+
+		if err := tx.Model(player).Update("creature_id", creature.ID).Error; err != nil {
+			return fmt.Errorf("Cant set player creature_id: %w", err)
+		}
+
 		return nil
 	})
 
